@@ -4,6 +4,7 @@ const userController = require('../controllers/userController')
 const bookController = require('../controllers/bookController')
 const jwtMiddleware = require('../middlewares/jwtMiddleware')
 const multerMiddleware = require('../middlewares/multerMiddleware')
+const adminMiddleware = require('../middlewares/adminMiddleware')
 
 // create router object
 const router = new express.Router()
@@ -31,5 +32,8 @@ router.get('/user-buy/all',jwtMiddleware,bookController.getUserBoughtBookProfile
 router.get('/book/:id/view',jwtMiddleware,bookController.viewBookController)
 // User Edit - 
 router.put('/user/:id/edit',jwtMiddleware,multerMiddleware.single('picture'),userController.updateUserProfileController)
+
+// -------------------------authorized admin---------------------------
+router.get('/admin-books/all',adminMiddleware,bookController.getAllBooksController)
 
 module.exports = router
