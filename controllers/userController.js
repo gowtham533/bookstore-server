@@ -105,4 +105,18 @@ exports.updateUserProfileController = async (req,res)=>{
         res.status(500).json(error)
     }
 }
+
+// get all users
+exports.getAllUsersController = async (req,res)=>{
+    console.log("Inside getAllUsersController");
+    try{
+        // get all users from db
+        const allusers = await users.find({role:{$ne:"admin"}})
+        res.status(200).json(allusers)
+    }catch(error){
+        console.log(error);
+        res.status(500).json(error)
+    }
+}
+
 // admin edt profile
