@@ -158,10 +158,46 @@ exports.deleteBookController = async (req,res)=>{
 exports.bookPaymentController = async (req,res)=>{
     console.log("inside bookPaymentController");
     
-    const {title,author,pages,price,discountPrice,imageURL,abstract,language,publisher,isbn,category,_id,uploadImages,sellerMail} = req.body
+    // const {title,author,pages,price,discountPrice,imageURL,abstract,language,publisher,isbn,category,_id,uploadImages,sellerMail} = req.body
+    const email = req.payload
+    const {id} = req.params
     try{
-        const updateBookDetails = await books.findByIdAndUpdate({_id},{title,author,pages,price,discountPrice,imageURL,abstract,language,publisher,isbn,category,uploadImages,sellerMail,status:'sold',buyerMail:email},{new:true})
+        const bookDetails = await books.findById({_id:id})
+        bookDetails.status = "sold"
+        bookDetails.buyerMail = email
+        await bookDetails.save()
+        console.log(bookDetails);
         
+        const {title,author,pages,price,discountPrice,imageURL,abstract,language,publisher,isbn,category,_id,uploadImages,sellerMail} = bookDetails
+        // checkout session
+        const line_items = [{
+            price_data:{
+                currency:"usd",
+                product_data:{
+                    name:title,
+                    description:`${author} | ${publisher}`,
+                    images:uploadImages,
+                    metadata:{
+                        title,author,pages,price,discountPrice,imageURL
+                    }
+                },
+                unit_amount:Math.round(discountPrice*100)
+            },
+            quantity:1
+        }]
+        console.log(line_items);
+        console.log(line_items.price_data.product_data);
+          console.log(line_items.price_data.product_data.metadata);
+        
+        const session = await stripe.checkout.sessions.create({
+            line_items,
+            mode: 'payment',
+            success_url: 'http://localhost:5173/user/payment-success',
+            cancel_url: 'http://localhost:5173/user/payment-error',
+            payment_method_types:["card"]
+        });
+        console.log(session);
+        res.status(200).json({checkoutURL:session.url})
     }catch(error){
         console.log(error);
         res.status(500).json(error)
