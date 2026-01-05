@@ -172,22 +172,15 @@ exports.bookPaymentController = async (req,res)=>{
         // checkout session
         const line_items = [{
             price_data:{
-                currency:"usd",
-                product_data:{
-                    name:title,
-                    description:`${author} | ${publisher}`,
-                    images:uploadImages,
-                    metadata:{
-                        title,author,pages,price,discountPrice,imageURL
-                    }
+                currency:'usd',
+                product:{
+                    title,author,price
                 },
                 unit_amount:Math.round(discountPrice*100)
             },
             quantity:1
         }]
         console.log(line_items);
-        console.log(line_items.price_data.product_data);
-          console.log(line_items.price_data.product_data.metadata);
         
         const session = await stripe.checkout.sessions.create({
             line_items,
